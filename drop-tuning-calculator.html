@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Drop-Tuning & String Gauge Tension Calculator — ActiveFrets Free Pro Tool</title>
+  <meta name="description" content="Calculate exact guitar string tension in lbs and kg for E Standard, Drop D, D Standard, C# Standard, C Standard, Drop C, B Standard, and Drop A across 24.75 to 27.0 inch scale lengths." />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-soft: #121937;
+      --card: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.12);
+      --text: #f6f7fb;
+      --muted: #b8c0d9;
+      --accent: #6ee7b7;
+      --accent-2: #60a5fa;
+      --warn: #fbbf24;
+      --danger: #f87171;
+      --shadow: 0 24px 60px rgba(0,0,0,0.35);
+      --radius: 22px;
+      --max: 1160px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(96,165,250,0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(110,231,183,0.14), transparent 28%),
+        linear-gradient(180deg, #0b1020 0%, #121937 100%);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));
+      color: #08111f;
+      font-weight: 900;
+      box-shadow: var(--shadow);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 22px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      align-items: center;
+    }
+
+    .nav-links a:hover, .nav-links a.active { color: var(--accent); font-weight: 700; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: 14px;
+      padding: 13px 20px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #34d399);
+      color: #08111f;
+      box-shadow: 0 18px 40px rgba(16,185,129,0.28);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border-color: rgba(255,255,255,0.14);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #d5def8;
+      padding: 7px 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      margin-bottom: 14px;
+    }
+
+    .hero-header {
+      padding: 28px 0 30px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(2rem, 4vw, 3.3rem);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .lead {
+      margin: 0 auto;
+      font-size: 1.06rem;
+      color: var(--muted);
+      max-width: 72ch;
+    }
+
+    .controls-bar {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr auto;
+      gap: 18px;
+      margin: 26px 0;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      align-items: end;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    select.pro-select {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 12px;
+      background: #0b1020;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: 1.45fr 0.85fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 1.24rem;
+    }
+
+    .string-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .string-table th {
+      text-align: left;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .string-table td {
+      padding: 13px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      vertical-align: middle;
+    }
+
+    .note-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(96,165,250,0.18);
+      border: 1px solid rgba(96,165,250,0.4);
+      font-weight: 800;
+      color: #e0f2fe;
+      font-size: 0.92rem;
+    }
+
+    select.gauge-select {
+      padding: 8px 10px;
+      border-radius: 9px;
+      background: rgba(11,16,32,0.9);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .tension-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+
+    .tension-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .summary-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .kpi-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .kpi-card .label {
+      font-size: 0.76rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .kpi-card .val {
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    .rec-box {
+      padding: 18px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(110,231,183,0.14), rgba(96,165,250,0.12));
+      border: 1px solid rgba(110,231,183,0.3);
+      margin-bottom: 18px;
+    }
+
+    .rec-box h3 {
+      margin: 0 0 8px;
+      font-size: 1.02rem;
+      color: var(--accent);
+    }
+
+    .cta-banner {
+      margin: 44px 0;
+      padding: 36px 30px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(96,165,250,0.18), rgba(110,231,183,0.14));
+      border: 1px solid rgba(255,255,255,0.16);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .cta-banner h2 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .cta-banner p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 62ch;
+    }
+
+    .tools-footer-bar {
+      padding: 28px 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      margin-bottom: 24px;
+    }
+
+    footer {
+      padding: 24px 0 48px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 960px) {
+      .controls-bar, .calc-grid, .cta-banner { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      .nav, .cta-banner, .tools-footer-bar { display: none !important; }
+      body { background: #fff; color: #000; }
+      .card, .controls-bar, .kpi-card { border: 1px solid #ccc; box-shadow: none; background: #fff; color: #000; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav class="nav">
+        <a href="index.html" class="brand" aria-label="ActiveFrets home">
+          <span class="brand-badge">AF</span>
+          <span>ActiveFrets</span>
+        </a>
+        <div class="nav-links">
+          <a href="index.html">Fretboard System</a>
+          <a href="pickup-tone-lab.html">Pickup Tone Lab</a>
+          <a href="drop-tuning-calculator.html" class="active">Drop-Tuning Calculator</a>
+          <a href="index.html#pricing">Pricing</a>
+        </div>
+        <a class="btn btn-primary" href="index.html#pricing">Unlock ActiveFrets ($39.99)</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero-header">
+      <div class="eyebrow">Free Guitarist Pro Physics Tool</div>
+      <h1>Drop-Tuning &amp; String Gauge Tension Calculator</h1>
+      <p class="lead">Eliminate floppy low strings, intonation drift, and muddy low-end in <strong>Drop D, C# Standard, C Standard, Drop C, B Standard, and Drop A</strong> using exact D'Addario unit-weight string physics.</p>
+    </section>
+
+    <section class="controls-bar">
+      <div>
+        <label class="field-label" for="scaleSelect">1. Guitar Scale Length</label>
+        <select id="scaleSelect" class="pro-select" onchange="onConfigChange()">
+          <option value="24.75">24.75" — Gibson Les Paul / SG (Warm)</option>
+          <option value="25.0">25.0" — PRS Custom / Hybrid</option>
+          <option value="25.5" selected>25.5" — Fender Strat / Tele / Superstrat</option>
+          <option value="26.5">26.5" — Extended Range Metal / Sludge</option>
+          <option value="27.0">27.0" — Baritone (Doom / Drop A Authority)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="field-label" for="tuningSelect">2. Target Guitar Tuning (9 Essential Tunings)</label>
+        <select id="tuningSelect" class="pro-select" onchange="onTuningSelectChange()">
+          <option value="E_STD">E Standard (E2 A2 D3 G3 B3 E4)</option>
+          <option value="EB_STD">Eb / Half-Step Down (Eb2 Ab2 Db3 Gb3 Bb3 Eb4)</option>
+          <option value="DROP_D">Drop D (D2 A2 D3 G3 B3 E4)</option>
+          <option value="D_STD">D Standard (D2 G2 C3 F3 A3 D4)</option>
+          <option value="CS_STD">C# Standard — Sludge / Sabbath (C#2 F#2 B2 E3 G#3 C#4)</option>
+          <option value="C_STD">C Standard — Stoner / Doom (C2 F2 Bb2 Eb3 G3 C4)</option>
+          <option value="DROP_C" selected>Drop C — Heavy Southern Sludge / Metal (C2 G2 C3 F3 A3 D4)</option>
+          <option value="B_STD">B Standard — Baritone / Death Metal (B1 E2 A2 D3 F#3 B3)</option>
+          <option value="DROP_A">Drop A — Mammoth Doom / Extended (A1 E2 A2 D3 F#3 B3)</option>
+        </select>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="autoBalanceGauges()">⚡ Auto-Match Ideal Gauges</button>
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ Print Setup Sheet</button>
+      </div>
+    </section>
+
+    <section class="calc-grid">
+      <!-- String-by-String Tension Table -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h2 style="margin:0;">String-by-String Physics &amp; Tension Breakdown</h2>
+          <span style="font-size:0.82rem; color:var(--muted);">Formula: T = UW × (2 × L × f)² / 386.4</span>
+        </div>
+
+        <table class="string-table" aria-label="String Tension Breakdown">
+          <thead>
+            <tr>
+              <th>String</th>
+              <th>Pitch / Hz</th>
+              <th>Gauge (Inches)</th>
+              <th>Tension (lbs / kg)</th>
+              <th>Feel &amp; Stability</th>
+            </tr>
+          </thead>
+          <tbody id="stringTableBody">
+            <!-- Populated dynamically by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Summary & Recommended Gauge Pack -->
+      <div class="card">
+        <h2>Rig Tension Summary &amp; Pro Setup BOM</h2>
+        <div class="summary-kpi-grid">
+          <div class="kpi-card">
+            <div class="label">Total Neck Tension</div>
+            <div class="val" id="totalLbs">108.4 lbs</div>
+            <div style="font-size:0.78rem; color:var(--muted);" id="totalKg">49.2 kg Total Pull</div>
+          </div>
+          <div class="kpi-card">
+            <div class="label">Avg String Tension</div>
+            <div class="val" id="avgLbs">18.1 lbs</div>
+            <div style="font-size:0.78rem; color:var(--muted);" id="feelSummary">Tight &amp; Articulate</div>
+          </div>
+        </div>
+
+        <div class="rec-box">
+          <h3 id="recTitle">Recommended String Set for Drop C (25.5" Scale)</h3>
+          <p style="margin:0 0 10px; font-size:0.92rem; color:#e2e8f0;" id="recGauges">
+            <strong>Ideal Gauge Pack:</strong> .011 – .014 – .018p – .030w – .042w – .056w
+          </p>
+          <p style="margin:0; font-size:0.84rem; color:var(--muted);" id="recNotes">
+            Maintains ~17.5–19.5 lbs on the wound strings so palm-muted chugs never pitch-drift sharp on attack or turn muddy through high-gain amps.
+          </p>
+        </div>
+
+        <div style="padding:16px; border-radius:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); margin-bottom:18px;">
+          <h3 style="margin:0 0 10px; font-size:0.98rem; color:var(--accent);">🛒 Order Recommended Setup Gear on Amazon</h3>
+          <div style="display:grid; gap:8px;">
+            <a id="dynamicStringBuyBtn" class="btn btn-primary" href="https://www.amazon.com/s?k=D%27Addario+XL+Nickel+Wound+Electric+Guitar+Strings+11-56&tag=theheelcloset-20" target="_blank" rel="noopener sponsored" style="width:100%; font-size:0.86rem; padding:11px 14px;">
+              🎸 Buy Calculated D'Addario / Ernie Ball Gauge Set (.011–.056) on Amazon →
+            </a>
+            <a class="btn btn-secondary" href="https://www.amazon.com/s?k=Dunlop+Primetone+Sculpted+Plectra+Guitar+Picks&tag=theheelcloset-20" target="_blank" rel="noopener sponsored" style="width:100%; font-size:0.83rem; padding:9px 12px; justify-content:space-between;">
+              <span>🔸 Dunlop Primetone Sculpted Plectra Picks</span>
+              <span style="color:var(--accent);">Shop Amazon ↗</span>
+            </a>
+            <a class="btn btn-secondary" href="https://www.amazon.com/s?k=MusicNomad+Keep+It+Simple+Setup+Starter+Kit+Truss+Rod+Action+Gauge&tag=theheelcloset-20" target="_blank" rel="noopener sponsored" style="width:100%; font-size:0.83rem; padding:9px 12px; justify-content:space-between;">
+              <span>📏 MusicNomad Truss Rod &amp; Action Setup Kit</span>
+              <span style="color:var(--accent);">Shop Amazon ↗</span>
+            </a>
+            <a class="btn btn-secondary" href="https://www.amazon.com/s?k=D%27Addario+Pro-Winder+Guitar+String+Winder+Cutter&tag=theheelcloset-20" target="_blank" rel="noopener sponsored" style="width:100%; font-size:0.83rem; padding:9px 12px; justify-content:space-between;">
+              <span>✂️ D'Addario Pro-Winder String Winder &amp; Cutter</span>
+              <span style="color:var(--accent);">Shop Amazon ↗</span>
+            </a>
+          </div>
+        </div>
+
+        <div style="padding:16px; border-radius:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); margin-bottom:18px;">
+          <h3 style="margin:0 0 8px; font-size:0.96rem;">🔧 Luthier Intonation &amp; Pickup Tip</h3>
+          <p style="margin:0; font-size:0.85rem; color:var(--muted);">
+            When dropping below D Standard, set your bass-side pickup pole pieces <strong>3.5mm–4.0mm</strong> below the low 6th string and treble side at <strong>2.0mm</strong> to prevent magnetic string-pull warble and sub-bass mud. <a href="pickup-tone-lab.html" style="color:var(--accent); font-weight:700; text-decoration:underline;">Simulate this in the Pickup Tone Lab →</a>
+          </p>
+        </div>
+
+        <a class="btn btn-primary" href="index.html#pricing" style="width:100%;">Visualize This Tuning on ActiveFrets ($39.99) →</a>
+      </div>
+    </section>
+
+    <!-- Conversion Funnel CTA to ActiveFrets -->
+    <section class="cta-banner">
+      <div>
+        <div class="eyebrow" style="margin-bottom:10px;">Playing in Alternate or Drop Tunings?</div>
+        <h2>Stop Relearning the Neck Every Time You Retune</h2>
+        <p>ActiveFrets maps out chords, scales, intervals, and CAGED patterns across <strong>9 common standard, drop, and alternate tunings</strong> instantly in your browser—with a built-in chromatic tuner and diagram exporter.</p>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px; min-width:240px;">
+        <a class="btn btn-primary" href="https://www.digistore24.com/product/672922">Get Lifetime Access — $39.99</a>
+        <a class="btn btn-secondary" href="index.html">See All 9 Tunings in ActiveFrets →</a>
+      </div>
+    </section>
+  </main>
+
+  <div class="tools-footer-bar">
+    <div class="container" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
+      <div>
+        <strong style="color:var(--accent);">Free Guitarist Pro Tools by ActiveFrets:</strong>
+        <span style="color:var(--muted); font-size:0.92rem; margin-left:8px;">Engineered for players who demand precision tone and fretboard mastery.</span>
+      </div>
+      <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <a href="pickup-tone-lab.html" class="btn btn-secondary" style="padding:9px 14px; font-size:0.85rem;">🎛️ Pickup Tone Lab</a>
+        <a href="drop-tuning-calculator.html" class="btn btn-secondary" style="padding:9px 14px; font-size:0.85rem;">🎸 Drop-Tuning String Tension Calculator</a>
+        <a href="index.html" class="btn btn-secondary" style="padding:9px 14px; font-size:0.85rem;">🏠 ActiveFrets Home</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>© <span id="year"></span> ActiveFrets. All rights reserved. • 30-Day Money-Back Guarantee</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Real D'Addario Plain Steel (p) & Nickel Wound (w) Unit Weights (lbs/inch)
+    const STRING_DB = {
+      '009p': { label: '.009 Plain', uw: 0.00001794 },
+      '0095p': { label: '.0095 Plain', uw: 0.00001999 },
+      '010p': { label: '.010 Plain', uw: 0.00002215 },
+      '011p': { label: '.011 Plain', uw: 0.00002680 },
+      '012p': { label: '.012 Plain', uw: 0.00003190 },
+      '013p': { label: '.013 Plain', uw: 0.00003744 },
+      '014p': { label: '.014 Plain', uw: 0.00004342 },
+      '015p': { label: '.015 Plain', uw: 0.00004984 },
+      '016p': { label: '.016 Plain', uw: 0.00005671 },
+      '017p': { label: '.017 Plain', uw: 0.00006402 },
+      '018p': { label: '.018 Plain', uw: 0.00007177 },
+      '020p': { label: '.020 Plain', uw: 0.00008860 },
+      '022w': { label: '.022 Wound', uw: 0.00009120 },
+      '024w': { label: '.024 Wound', uw: 0.00010820 },
+      '026w': { label: '.026 Wound', uw: 0.00012640 },
+      '028w': { label: '.028 Wound', uw: 0.00014610 },
+      '030w': { label: '.030 Wound', uw: 0.00016780 },
+      '032w': { label: '.032 Wound', uw: 0.00019010 },
+      '034w': { label: '.034 Wound', uw: 0.00021350 },
+      '036w': { label: '.036 Wound', uw: 0.00023820 },
+      '038w': { label: '.038 Wound', uw: 0.00026480 },
+      '042w': { label: '.042 Wound', uw: 0.00032240 },
+      '046w': { label: '.046 Wound', uw: 0.00038460 },
+      '048w': { label: '.048 Wound', uw: 0.00041850 },
+      '050w': { label: '.050 Wound', uw: 0.00045210 },
+      '052w': { label: '.052 Wound', uw: 0.00048840 },
+      '054w': { label: '.054 Wound', uw: 0.00052650 },
+      '056w': { label: '.056 Wound', uw: 0.00056580 },
+      '059w': { label: '.059 Wound', uw: 0.00062650 },
+      '060w': { label: '.060 Wound', uw: 0.00064800 },
+      '062w': { label: '.062 Wound', uw: 0.00069200 },
+      '064w': { label: '.064 Wound', uw: 0.00073750 },
+      '068w': { label: '.068 Wound', uw: 0.00083200 }
+    };
+
+    // Tunings listed from String 1 (High) to String 6 (Low)
+    const TUNINGS = {
+      E_STD: {
+        name: 'E Standard',
+        notes: [
+          { str: '1st (High)', note: 'E4', hz: 329.63 },
+          { str: '2nd', note: 'B3', hz: 246.94 },
+          { str: '3rd', note: 'G3', hz: 196.00 },
+          { str: '4th', note: 'D3', hz: 146.83 },
+          { str: '5th', note: 'A2', hz: 110.00 },
+          { str: '6th (Low)', note: 'E2', hz: 82.41 }
+        ],
+        ideal255: ['010p', '013p', '017p', '026w', '036w', '046w']
+      },
+      EB_STD: {
+        name: 'Eb Standard (Half-Step Down)',
+        notes: [
+          { str: '1st (High)', note: 'Eb4', hz: 311.13 },
+          { str: '2nd', note: 'Bb3', hz: 233.08 },
+          { str: '3rd', note: 'Gb3', hz: 185.00 },
+          { str: '4th', note: 'Db3', hz: 138.59 },
+          { str: '5th', note: 'Ab2', hz: 103.83 },
+          { str: '6th (Low)', note: 'Eb2', hz: 77.78 }
+        ],
+        ideal255: ['010p', '013p', '017p', '028w', '038w', '048w']
+      },
+      DROP_D: {
+        name: 'Drop D',
+        notes: [
+          { str: '1st (High)', note: 'E4', hz: 329.63 },
+          { str: '2nd', note: 'B3', hz: 246.94 },
+          { str: '3rd', note: 'G3', hz: 196.00 },
+          { str: '4th', note: 'D3', hz: 146.83 },
+          { str: '5th', note: 'A2', hz: 110.00 },
+          { str: '6th (Low)', note: 'D2', hz: 73.42 }
+        ],
+        ideal255: ['010p', '013p', '017p', '026w', '036w', '052w']
+      },
+      D_STD: {
+        name: 'D Standard (Whole-Step Down)',
+        notes: [
+          { str: '1st (High)', note: 'D4', hz: 293.66 },
+          { str: '2nd', note: 'A3', hz: 220.00 },
+          { str: '3rd', note: 'F3', hz: 174.61 },
+          { str: '4th', note: 'C3', hz: 130.81 },
+          { str: '5th', note: 'G2', hz: 98.00 },
+          { str: '6th (Low)', note: 'D2', hz: 73.42 }
+        ],
+        ideal255: ['011p', '014p', '018p', '028w', '038w', '050w']
+      },
+      CS_STD: {
+        name: 'C# Standard (Sludge / Sabbath)',
+        notes: [
+          { str: '1st (High)', note: 'C#4', hz: 277.18 },
+          { str: '2nd', note: 'G#3', hz: 207.65 },
+          { str: '3rd', note: 'E3', hz: 164.81 },
+          { str: '4th', note: 'B2', hz: 123.47 },
+          { str: '5th', note: 'F#2', hz: 92.50 },
+          { str: '6th (Low)', note: 'C#2', hz: 69.30 }
+        ],
+        ideal255: ['011p', '015p', '020p', '030w', '042w', '054w']
+      },
+      C_STD: {
+        name: 'C Standard (Stoner / Doom)',
+        notes: [
+          { str: '1st (High)', note: 'C4', hz: 261.63 },
+          { str: '2nd', note: 'G3', hz: 196.00 },
+          { str: '3rd', note: 'Eb3', hz: 155.56 },
+          { str: '4th', note: 'Bb2', hz: 116.54 },
+          { str: '5th', note: 'F2', hz: 87.31 },
+          { str: '6th (Low)', note: 'C2', hz: 65.41 }
+        ],
+        ideal255: ['012p', '016p', '022w', '032w', '046w', '056w']
+      },
+      DROP_C: {
+        name: 'Drop C (Southern Sludge / Metal)',
+        notes: [
+          { str: '1st (High)', note: 'D4', hz: 293.66 },
+          { str: '2nd', note: 'A3', hz: 220.00 },
+          { str: '3rd', note: 'F3', hz: 174.61 },
+          { str: '4th', note: 'C3', hz: 130.81 },
+          { str: '5th', note: 'G2', hz: 98.00 },
+          { str: '6th (Low)', note: 'C2', hz: 65.41 }
+        ],
+        ideal255: ['011p', '014p', '018p', '030w', '042w', '056w']
+      },
+      B_STD: {
+        name: 'B Standard (Baritone / Death Metal)',
+        notes: [
+          { str: '1st (High)', note: 'B3', hz: 246.94 },
+          { str: '2nd', note: 'F#3', hz: 185.00 },
+          { str: '3rd', note: 'D3', hz: 146.83 },
+          { str: '4th', note: 'A2', hz: 110.00 },
+          { str: '5th', note: 'E2', hz: 82.41 },
+          { str: '6th (Low)', note: 'B1', hz: 61.74 }
+        ],
+        ideal255: ['013p', '017p', '024w', '036w', '048w', '062w']
+      },
+      DROP_A: {
+        name: 'Drop A (Mammoth Doom / Extended)',
+        notes: [
+          { str: '1st (High)', note: 'B3', hz: 246.94 },
+          { str: '2nd', note: 'F#3', hz: 185.00 },
+          { str: '3rd', note: 'D3', hz: 146.83 },
+          { str: '4th', note: 'A2', hz: 110.00 },
+          { str: '5th', note: 'E2', hz: 82.41 },
+          { str: '6th (Low)', note: 'A1', hz: 55.00 }
+        ],
+        ideal255: ['013p', '017p', '024w', '036w', '050w', '068w']
+      }
+    };
+
+    let currentGauges = [...TUNINGS.DROP_C.ideal255];
+
+    function calcStringTensionLbs(uw, scaleInches, freqHz) {
+      return (uw * Math.pow(2 * scaleInches * freqHz, 2)) / 386.4;
+    }
+
+    function findClosestBalancedGauge(scaleInches, freqHz, isWoundPreferred, targetLbs) {
+      const keys = Object.keys(STRING_DB);
+      let bestKey = keys[0];
+      let bestDiff = 999;
+      keys.forEach(k => {
+        const isWound = k.endsWith('w');
+        if (isWoundPreferred && !isWound) return;
+        if (!isWoundPreferred && isWound && freqHz > 165) return;
+        const t = calcStringTensionLbs(STRING_DB[k].uw, scaleInches, freqHz);
+        const diff = Math.abs(t - targetLbs);
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          bestKey = k;
+        }
+      });
+      return bestKey;
+    }
+
+    function autoBalanceGauges() {
+      const scale = parseFloat(document.getElementById('scaleSelect').value);
+      const tuningKey = document.getElementById('tuningSelect').value;
+      const tuning = TUNINGS[tuningKey];
+
+      // Target ~16.2 lbs on plain strings and ~18.8 lbs on wound strings
+      currentGauges = tuning.notes.map((n, idx) => {
+        const isWound = idx >= 3 || (idx === 2 && n.hz < 160);
+        const target = idx === 5 ? 19.2 : (isWound ? 18.4 : 16.2);
+        return findClosestBalancedGauge(scale, n.hz, isWound, target);
+      });
+      renderTable();
+    }
+
+    function onTuningSelectChange() {
+      autoBalanceGauges();
+    }
+
+    function onConfigChange() {
+      renderTable();
+    }
+
+    function onSingleGaugeChange(idx, val) {
+      currentGauges[idx] = val;
+      renderTable();
+    }
+
+    function renderTable() {
+      const scale = parseFloat(document.getElementById('scaleSelect').value);
+      const tuningKey = document.getElementById('tuningSelect').value;
+      const tuning = TUNINGS[tuningKey];
+      const tbody = document.getElementById('stringTableBody');
+
+      let totalLbs = 0;
+      let html = '';
+
+      tuning.notes.forEach((n, idx) => {
+        const gKey = currentGauges[idx];
+        const gObj = STRING_DB[gKey];
+        const lbs = calcStringTensionLbs(gObj.uw, scale, n.hz);
+        const kg = lbs * 0.453592;
+        totalLbs += lbs;
+
+        let statusText = 'Balanced & Articulate';
+        let statusColor = '#6ee7b7';
+        let statusBg = 'rgba(110,231,183,0.16)';
+        if (lbs < 13.8) {
+          statusText = 'Floppy / Pitch Drift';
+          statusColor = '#f87171';
+          statusBg = 'rgba(248,113,113,0.16)';
+        } else if (lbs < 15.0) {
+          statusText = 'Light / Slinky Bend';
+          statusColor = '#fbbf24';
+          statusBg = 'rgba(251,191,36,0.16)';
+        } else if (lbs > 22.5) {
+          statusText = 'Very Tight / Stiff';
+          statusColor = '#60a5fa';
+          statusBg = 'rgba(96,165,250,0.18)';
+        }
+
+        const pct = Math.min(100, Math.max(15, ((lbs - 8) / 18) * 100));
+
+        let optionsHtml = '';
+        Object.keys(STRING_DB).forEach(k => {
+          optionsHtml += `<option value="${k}" ${k === gKey ? 'selected' : ''}>${STRING_DB[k].label}</option>`;
+        });
+
+        html += `
+          <tr>
+            <td style="font-weight:700;">${n.str}</td>
+            <td>
+              <span class="note-pill">${n.note}</span>
+              <span style="font-size:0.78rem; color:var(--muted); margin-left:6px;">${n.hz.toFixed(1)} Hz</span>
+            </td>
+            <td>
+              <select class="gauge-select" onchange="onSingleGaugeChange(${idx}, this.value)" aria-label="Gauge for ${n.str}">
+                ${optionsHtml}
+              </select>
+            </td>
+            <td>
+              <div style="font-weight:800; font-size:0.98rem;">${lbs.toFixed(1)} lbs <span style="color:var(--muted); font-weight:400; font-size:0.82rem;">(${kg.toFixed(1)} kg)</span></div>
+              <div class="tension-bar-bg">
+                <div class="tension-bar-fill" style="width:${pct}%; background:${statusColor};"></div>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge" style="color:${statusColor}; background:${statusBg};">${statusText}</span>
+            </td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+
+      const avgLbs = totalLbs / 6;
+      const totalKg = totalLbs * 0.453592;
+      document.getElementById('totalLbs').textContent = totalLbs.toFixed(1) + ' lbs';
+      document.getElementById('totalKg').textContent = totalKg.toFixed(1) + ' kg Total Neck Pull';
+      document.getElementById('avgLbs').textContent = avgLbs.toFixed(1) + ' lbs';
+      document.getElementById('feelSummary').textContent =
+        avgLbs < 14.5 ? 'Loose / Needs Heavier Gauge' : (avgLbs <= 20.5 ? 'Ideal Riff & Lead Balance' : 'High-Tension Heavy Rig');
+
+      document.getElementById('recTitle').textContent = `Custom Balanced Set for ${tuning.name} (${scale}" Scale)`;
+      const gaugeLabels = currentGauges.map(k => '.' + k.replace('p','').replace('w','w'));
+      document.getElementById('recGauges').innerHTML = `<strong>Active Gauge Set:</strong> ${gaugeLabels.join(' – ')}`;
+
+      // Update dynamic Amazon affiliate string search button
+      const highG = currentGauges[0].replace(/^0+/, '').replace('p', '').replace('w', '');
+      const lowG = currentGauges[5].replace(/^0+/, '').replace('p', '').replace('w', '');
+      const searchQ = encodeURIComponent(`D'Addario XL Nickel Wound Electric Guitar Strings ${highG}-${lowG}`);
+      const buyBtn = document.getElementById('dynamicStringBuyBtn');
+      if (buyBtn) {
+        buyBtn.href = `https://www.amazon.com/s?k=${searchQ}&tag=theheelcloset-20`;
+        buyBtn.textContent = `🎸 Buy D'Addario / Ernie Ball (${gaugeLabels[0]}–${gaugeLabels[5]}) String Set on Amazon →`;
+      }
+    }
+
+    // Initialize on load
+    autoBalanceGauges();
+  </script>
+</body>
+</html>

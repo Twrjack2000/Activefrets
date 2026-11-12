@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You! - ActiveFrets.com</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a12;
+            color: #e0e0f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 20%, rgba(0, 242, 255, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 80% 80%, rgba(120, 80, 255, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 560px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Checkmark animation */
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #00f2ff, #7850ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 28px;
+            font-size: 36px;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+            box-shadow: 0 0 40px rgba(0, 242, 255, 0.4);
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .logo {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #00f2ff;
+            margin-bottom: 16px;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.2s ease forwards;
+        }
+
+        h1 {
+            font-size: clamp(28px, 6vw, 40px);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 12px;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.35s ease forwards;
+        }
+
+        h1 span {
+            color: #00f2ff;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #8888aa;
+            margin-bottom: 36px;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.45s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Access code card */
+        .code-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(0, 242, 255, 0.25);
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 28px;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.55s ease forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00f2ff, #7850ff, #00f2ff);
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .code-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #00f2ff;
+            margin-bottom: 14px;
+        }
+
+        .code-display {
+            font-family: 'Courier New', monospace;
+            font-size: clamp(22px, 5vw, 30px);
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #ffffff;
+            background: rgba(0, 242, 255, 0.08);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            user-select: all;
+        }
+
+        .code-display:hover {
+            background: rgba(0, 242, 255, 0.14);
+            border-color: rgba(0, 242, 255, 0.5);
+        }
+
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #00f2ff, #7850ff);
+            color: #000;
+            font-weight: 700;
+            font-size: 14px;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .copy-btn:hover {
+            opacity: 0.9;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.97);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #00e676, #00b0ff);
+        }
+
+        /* Steps */
+        .steps {
+            text-align: left;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.65s ease forwards;
+        }
+
+        .steps h2 {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #8888aa;
+            margin-bottom: 16px;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #00f2ff22, #7850ff22);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #00f2ff;
+        }
+
+        .step-text {
+            font-size: 14px;
+            color: #aaaacc;
+            line-height: 1.5;
+            padding-top: 4px;
+        }
+
+        .step-text strong {
+            color: #e0e0f0;
+        }
+
+        .go-btn {
+            display: block;
+            width: 100%;
+            margin-top: 28px;
+            background: linear-gradient(135deg, #00f2ff, #7850ff);
+            color: #000;
+            font-weight: 800;
+            font-size: 16px;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s, transform 0.1s;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.75s ease forwards;
+            letter-spacing: 0.5px;
+        }
+
+        .go-btn:hover {
+            opacity: 0.9;
+        }
+
+        .go-btn:active {
+            transform: scale(0.98);
+        }
+
+        .footer-note {
+            margin-top: 24px;
+            font-size: 12px;
+            color: #555577;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.85s ease forwards;
+        }
+
+        .footer-note a {
+            color: #00f2ff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="success-icon">✓</div>
+        <div class="logo">ActiveFrets.com</div>
+        <h1>Payment <span>Confirmed!</span></h1>
+        <p class="subtitle">Welcome aboard. Here is your lifetime access code.</p>
+
+        <div class="code-card">
+            <div class="code-label">🔑 Your Access Code</div>
+            <div class="code-display" id="codeDisplay" title="Click to select">activefrets2026</div>
+            <button class="copy-btn" id="copyBtn" onclick="copyCode()">
+                <span id="copyIcon">📋</span>
+                <span id="copyText">Copy Code</span>
+            </button>
+        </div>
+
+        <div class="steps">
+            <h2>How to Access the Tool</h2>
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">Click <strong>"Go to ActiveFrets"</strong> below to open the tool.</div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">You'll see a login screen — paste your access code and click
+                    <strong>"Unlock"</strong>.</div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text"><strong>Save your code</strong> somewhere safe — you'll need it each time you
+                    visit on a new device.</div>
+            </div>
+        </div>
+
+        <a href="https://activefrets.com/tool.html" class="go-btn">🎸 Go to ActiveFrets →</a>
+
+        <p class="footer-note">
+            Questions? Email us at <a href="mailto:support@activefrets.com">support@activefrets.com</a><br>
+            30-day money-back guarantee — no questions asked.
+        </p>
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('codeDisplay').innerText.trim();
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const icon = document.getElementById('copyIcon');
+                const text = document.getElementById('copyText');
+                btn.classList.add('copied');
+                icon.textContent = '✅';
+                text.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    icon.textContent = '📋';
+                    text.textContent = 'Copy Code';
+                }, 2500);
+            });
+        }
+    </script>
+</body>
+
+</html>

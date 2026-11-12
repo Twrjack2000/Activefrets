@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Guitar Pickup &amp; Tone Voicing Lab — ActiveFrets Free Pro Tool</title>
+  <meta name="description" content="Compare Single-Coil, P-90, Humbucker (Series/Parallel), 3-Coil Triplebucker, and Modern Active Humbucker (EMG 81 / Fishman Style) with live SVG frequency response curves and WebAudio riff audition." />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-soft: #121937;
+      --card: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.12);
+      --text: #f6f7fb;
+      --muted: #b8c0d9;
+      --accent: #6ee7b7;
+      --accent-2: #60a5fa;
+      --accent-warn: #fbbf24;
+      --shadow: 0 24px 60px rgba(0,0,0,0.35);
+      --radius: 22px;
+      --max: 1160px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(96,165,250,0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(110,231,183,0.14), transparent 28%),
+        linear-gradient(180deg, #0b1020 0%, #121937 100%);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));
+      color: #08111f;
+      font-weight: 900;
+      box-shadow: var(--shadow);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 22px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      align-items: center;
+    }
+
+    .nav-links a:hover, .nav-links a.active { color: var(--accent); font-weight: 700; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: 14px;
+      padding: 13px 20px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #34d399);
+      color: #08111f;
+      box-shadow: 0 18px 40px rgba(16,185,129,0.28);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border-color: rgba(255,255,255,0.14);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #d5def8;
+      padding: 7px 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      margin-bottom: 14px;
+    }
+
+    .hero-header {
+      padding: 28px 0 32px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .lead {
+      margin: 0 auto;
+      font-size: 1.08rem;
+      color: var(--muted);
+      max-width: 72ch;
+    }
+
+    .preset-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 24px 0 32px;
+    }
+
+    .preset-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: var(--text);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .preset-btn:hover, .preset-btn.active {
+      background: linear-gradient(135deg, rgba(110,231,183,0.22), rgba(96,165,250,0.22));
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .lab-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2, .card h3 {
+      margin: 0 0 14px;
+      font-size: 1.2rem;
+    }
+
+    .control-group {
+      margin-bottom: 20px;
+    }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #e2e8f0;
+    }
+
+    .control-val {
+      color: var(--accent);
+      font-family: monospace;
+      font-size: 0.95rem;
+    }
+
+    .pickup-selector {
+      display: grid;
+      gap: 8px;
+    }
+
+    .pickup-opt {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      transition: all 0.16s ease;
+      text-align: left;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .pickup-opt:hover {
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .pickup-opt.active {
+      background: linear-gradient(135deg, rgba(110,231,183,0.18), rgba(96,165,250,0.14));
+      border-color: var(--accent);
+      box-shadow: 0 0 24px rgba(110,231,183,0.15);
+    }
+
+    .pickup-opt .pk-title {
+      font-weight: 800;
+      font-size: 0.95rem;
+      display: block;
+    }
+
+    .pickup-opt .pk-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .pk-badge {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(110,231,183,0.18);
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .seg-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .seg-row-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .seg-btn {
+      padding: 10px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.84rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .seg-btn.active {
+      background: rgba(96,165,250,0.2);
+      border-color: var(--accent-2);
+      color: var(--text);
+    }
+
+    .graph-wrap {
+      background: rgba(8, 13, 26, 0.85);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 18px;
+      position: relative;
+    }
+
+    svg.freq-svg {
+      width: 100%;
+      height: 310px;
+      display: block;
+      overflow: visible;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .kpi-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .kpi-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .kpi-val {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .jdrive-callout {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(110,231,183,0.12), rgba(96,165,250,0.12));
+      border: 1px solid rgba(110,231,183,0.3);
+    }
+
+    .jdrive-callout h4 {
+      margin: 0 0 6px;
+      color: var(--accent);
+      font-size: 1rem;
+    }
+
+    .jdrive-callout p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #dce4f7;
+    }
+
+    .audio-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 18px;
+      padding: 16px 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+    }
+
+    .cta-banner {
+      margin: 44px 0;
+      padding: 36px 30px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(96,165,250,0.18), rgba(110,231,183,0.14));
+      border: 1px solid rgba(255,255,255,0.16);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .cta-banner h2 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .cta-banner p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 62ch;
+    }
+
+    .tools-footer-bar {
+      padding: 28px 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      margin-bottom: 24px;
+    }
+
+    footer {
+      padding: 24px 0 48px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 980px) {
+      .lab-grid { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .cta-banner { grid-template-columns: 1fr; text-align: left; }
+    }
+
+    @media print {
+      .nav, .preset-bar, .audio-bar, .cta-banner, .tools-footer-bar { display: none !important; }
+      body { background: #fff; color: #000; }
+      .card, .graph-wrap, .kpi-box { border: 1px solid #ccc; box-shadow: none; background: #fff; color: #000; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav class="nav">
+        <a href="index.html" class="brand" aria-label="ActiveFrets home">
+          <span class="brand-badge">AF</span>
+          <span>ActiveFrets</span>
+        </a>
+        <div class="nav-links">
+          <a href="index.html">Fretboard System</a>
+          <a href="pickup-tone-lab.html" class="active">Pickup Tone Lab</a>
+          <a href="drop-tuning-calculator.html">Drop-Tuning Calculator</a>
+          <a href="index.html#pricing">Pricing</a>
+        </div>
+        <a class="btn btn-primary" href="index.html#pricing">Unlock ActiveFrets ($39.99)</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero-header">
+      <div class="eyebrow">Free Guitarist Pro Engineering Tool</div>
+      <h1>Interactive Guitar Pickup &amp; Tone Voicing Lab</h1>
+      <p class="lead">Simulate resonant peak frequency, coil inductance, potentiometer loading, cable capacitance loss, and active vs. passive pickup architectures across <strong>Single-Coil, P-90, Standard Humbucker, 3-Coil Triplebucker, and Modern Active Humbuckers</strong>.</p>
+
+      <div class="preset-bar" aria-label="Genre Tone Presets">
+        <button class="preset-btn active" onclick="applyPreset('sludge', this)">🔥 Modern Metal &amp; Sludge (Active HB)</button>
+        <button class="preset-btn" onclick="applyPreset('doom', this)">🌑 Doom / Stoner (Triplebucker)</button>
+        <button class="preset-btn" onclick="applyPreset('texas', this)">⚡ Texas Blues (Single-Coil)</button>
+        <button class="preset-btn" onclick="applyPreset('classic', this)">🎸 Classic Rock (PAF Series)</button>
+        <button class="preset-btn" onclick="applyPreset('thrash', this)">⚔️ Thrash Metal (Active 1MΩ)</button>
+      </div>
+    </section>
+
+    <section class="lab-grid">
+      <!-- Left Column: Interactive Controls -->
+      <div class="card">
+        <h2>1. Select Pickup Architecture</h2>
+        <div class="pickup-selector" id="pickupSelector">
+          <button class="pickup-opt active" data-pickup="active_hb" onclick="selectPickup('active_hb')">
+            <div>
+              <span class="pk-title">Modern Active Humbucker (EMG 81 / Fishman Style)</span>
+              <span class="pk-sub">Internal Active Preamp + Tight Low-End Voicing (+9dB)</span>
+            </div>
+            <span class="pk-badge">LOW-Z ACTIVE</span>
+          </button>
+
+          <button class="pickup-opt" data-pickup="triplebucker" onclick="selectPickup('triplebucker')">
+            <div>
+              <span class="pk-title">3-Coil Triplebucker</span>
+              <span class="pk-sub">8.4H Inductance • Massive Low-Mid Wall</span>
+            </div>
+            <span class="pk-badge">14.6 kΩ</span>
+          </button>
+
+          <button class="pickup-opt" data-pickup="hb_series" onclick="selectPickup('hb_series')">
+            <div>
+              <span class="pk-title">Standard Humbucker (Series)</span>
+              <span class="pk-sub">5.2H Inductance • Classic Warmth &amp; Punch</span>
+            </div>
+            <span class="pk-badge">9.8 kΩ</span>
+          </button>
+
+          <button class="pickup-opt" data-pickup="hb_parallel" onclick="selectPickup('hb_parallel')">
+            <div>
+              <span class="pk-title">Standard Humbucker (Parallel)</span>
+              <span class="pk-sub">1.3H Inductance • Hum-Canceling Glassy Snap</span>
+            </div>
+            <span class="pk-badge">2.45 kΩ</span>
+          </button>
+
+          <button class="pickup-opt" data-pickup="p90" onclick="selectPickup('p90')">
+            <div>
+              <span class="pk-title">P-90 Soapbar Single-Coil</span>
+              <span class="pk-sub">6.5H Inductance • Gritty Bark &amp; Mid Growl</span>
+            </div>
+            <span class="pk-badge">8.4 kΩ</span>
+          </button>
+
+          <button class="pickup-opt" data-pickup="strat" onclick="selectPickup('strat')">
+            <div>
+              <span class="pk-title">Single-Coil (Strat Alnico V)</span>
+              <span class="pk-sub">2.4H Inductance • Bell-Like Chime &amp; Bite</span>
+            </div>
+            <span class="pk-badge">6.2 kΩ</span>
+          </button>
+        </div>
+
+        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin: 22px 0;">
+
+        <h2>2. Rig &amp; Circuit Parameters</h2>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Guitar Scale Length</span>
+            <span class="control-val" id="scaleLabel">25.5" (Fender / Snap)</span>
+          </div>
+          <div class="seg-row-2">
+            <button class="seg-btn active" id="scale255" onclick="setScale(25.5)">25.5" Scale (Tight)</button>
+            <button class="seg-btn" id="scale2475" onclick="setScale(24.75)">24.75" Scale (Warm)</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Volume / Tone Potentiometer</span>
+            <span class="control-val" id="potLabel">500 kΩ</span>
+          </div>
+          <div class="seg-row">
+            <button class="seg-btn" id="pot250" onclick="setPot(250)">250 kΩ</button>
+            <button class="seg-btn active" id="pot500" onclick="setPot(500)">500 kΩ</button>
+            <button class="seg-btn" id="pot1000" onclick="setPot(1000)">1 MΩ</button>
+          </div>
+        </div>
+
+        <div class="control-group" style="margin-bottom:0;">
+          <div class="control-label">
+            <span>Cable Capacitance / Buffer</span>
+            <span class="control-val" id="cableLabel">Active Low-Z Buffer</span>
+          </div>
+          <div class="seg-row">
+            <button class="seg-btn" id="cab10" onclick="setCable(300)">10ft (300pF)</button>
+            <button class="seg-btn" id="cab30" onclick="setCable(900)">30ft (900pF)</button>
+            <button class="seg-btn active" id="cabBuffer" onclick="setCable(0)">Low-Z Buffer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Live SVG Curve & WebAudio Audition -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+          <div>
+            <h2 style="margin:0;" id="activeCurveTitle">Modern Active Humbucker (EMG 81 / Fishman Style)</h2>
+            <span style="font-size:0.86rem; color:var(--muted);" id="activeCurveSubtitle">Ceramic Rail / Bar Voicing + Active Low-Impedance Preamp</span>
+          </div>
+          <button class="btn btn-secondary" onclick="window.print()" style="padding:9px 14px; font-size:0.84rem;">🖨️ Print / Save Spec Sheet</button>
+        </div>
+
+        <div class="graph-wrap">
+          <svg class="freq-svg" id="freqSvg" viewBox="0 0 700 300" aria-label="Pickup Frequency Response Curve">
+            <!-- Grid lines & labels rendered dynamically by JS -->
+          </svg>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-box">
+            <div class="kpi-label">Resonant Peak</div>
+            <div class="kpi-val" id="kpiPeak">3.42 kHz</div>
+            <div class="kpi-sub" id="kpiQ">+10.8 dB Peak</div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-label">Inductance</div>
+            <div class="kpi-val" id="kpiInductance">3.80 H</div>
+            <div class="kpi-sub" id="kpiOutput">+9.0 dB Active Gain</div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-label">Bass Tightness</div>
+            <div class="kpi-val" id="kpiBass">95 / 100</div>
+            <div class="kpi-sub" id="kpiBassSub">Active Low-Cut Voicing</div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-label">Output Z / Loss</div>
+            <div class="kpi-val" id="kpiZ">10 kΩ</div>
+            <div class="kpi-sub" id="kpiZSub">Zero Cable Roll-Off</div>
+          </div>
+        </div>
+
+        <div class="jdrive-callout" id="techCallout">
+          <h4 id="calloutTitle">Modern Active Humbucker Acoustic Profile:</h4>
+          <p id="calloutBody">Modern active humbuckers (such as the EMG 81 or Fishman Fluence Modern) pair low-inductance coils with an onboard active preamp and tailored low-frequency roll-off. This keeps palm-muted drop-tuned riffs tight and articulate while driving long instrument cables without high-frequency loss.</p>
+        </div>
+
+        <div class="audio-bar">
+          <div>
+            <strong style="display:block; font-size:0.96rem;">🔊 WebAudio Real-Time Riff &amp; Harmonic Audition</strong>
+            <span style="font-size:0.83rem; color:var(--muted);">Hear the exact resonant peak, low-end tightness, and pickup voicing in your browser.</span>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-primary" id="auditionBtn" onclick="toggleAudition()">▶ Audition Drop-C Riff</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Amazon Affiliate Electronics BOM -->
+    <section style="margin-top:24px;">
+      <div class="card">
+        <div class="eyebrow" style="margin-bottom:8px;">Luthier &amp; Modder Workbench BOM</div>
+        <h2 style="margin:0 0 10px;">🛒 Order Recommended Setup Gear on Amazon</h2>
+        <p style="margin:0 0 16px; font-size:0.9rem; color:var(--muted);">Upgrade your guitar's electronics cavity with pro-grade pots, shielding, TRS battery switching, and soldering gear:</p>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:10px;">
+          <a class="btn btn-secondary" href="https://www.amazon.com/s?k=Bourns+500k+Push+Pull+Audio+Taper+Guitar+Potentiometer&tag=theheelcloset-20" target="_blank" rel="noopener sponsored" style="justify-content:space-between; width:100%; font-size:0.86rem; padding:11px 14px;">
+            <span>🎛️ Bourns 500k Push-Pull Audio Pots (Coil-Split / Voicing)</span>
+            <span style="color:var(--accent);">Shop Amazon ↗</span>
+          </a>
+          <a class="btn btn-secondary" href="https://www.amazon.com/s?k=Copper+Foil+Shielding+Tape+Conductive+Adhesive+Guitar+Cavity&tag=theheelcloset-20" target="_blank" rel="noopener sponsored" style="justify-content:space-between; width:100%; font-size:0.86rem; padding:11px 14px;">
+            <span>🛡️ Copper Foil Shielding Tape (Conductive Adhesive)</span>
+            <span style="color:var(--accent);">Shop Amazon ↗</span>
+          </a>
+          <a class="btn btn-secondary" href="https://www.amazon.com/s?k=Hakko+FX-888D+Digital+Soldering+Station&tag=theheelcloset-20" target="_blank" rel="noopener sponsored" style="justify-content:space-between; width:100%; font-size:0.86rem; padding:11px 14px;">
+            <span>🔥 Hakko FX-888D Digital Soldering Station</span>
+            <span style="color:var(--accent);">Shop Amazon ↗</span>
+          </a>
+          <a class="btn btn-secondary" href="https://www.amazon.com/s?k=Switchcraft+12B+1/4+TRS+Stereo+Output+Jack+Guitar&tag=theheelcloset-20" target="_blank" rel="noopener sponsored" style="justify-content:space-between; width:100%; font-size:0.86rem; padding:11px 14px;">
+            <span>🔌 Switchcraft 1/4" TRS Stereo Output Jack (9V Auto-Switch)</span>
+            <span style="color:var(--accent);">Shop Amazon ↗</span>
+          </a>
+          <a class="btn btn-secondary" href="https://www.amazon.com/s?k=Seymour+Duncan+Triple+Shot+Switching+Mounting+Rings&tag=theheelcloset-20" target="_blank" rel="noopener sponsored" style="justify-content:space-between; width:100%; font-size:0.86rem; padding:11px 14px;">
+            <span>⚡ Seymour Duncan Triple Shot Series/Parallel Mounting Rings</span>
+            <span style="color:var(--accent);">Shop Amazon ↗</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Conversion Funnel CTA to ActiveFrets -->
+    <section class="cta-banner">
+      <div>
+        <div class="eyebrow" style="margin-bottom:10px;">Dialed In Your Tone? Now Master the Neck</div>
+        <h2>Unlock the Full ActiveFrets Interactive Guitar System</h2>
+        <p>Now that your pickup voicings and tunings are dialed in, visualize every chord, scale, interval, and CAGED pattern instantly across <strong>9 common standard and drop tunings</strong> right in your browser.</p>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px; min-width:240px;">
+        <a class="btn btn-primary" href="https://www.digistore24.com/product/672922">Get Lifetime Access — $39.99</a>
+        <a class="btn btn-secondary" href="index.html">Explore ActiveFrets Features →</a>
+      </div>
+    </section>
+  </main>
+
+  <div class="tools-footer-bar">
+    <div class="container" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
+      <div>
+        <strong style="color:var(--accent);">Free Guitarist Pro Tools by ActiveFrets:</strong>
+        <span style="color:var(--muted); font-size:0.92rem; margin-left:8px;">Engineered for players who demand precision tone and fretboard mastery.</span>
+      </div>
+      <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <a href="pickup-tone-lab.html" class="btn btn-secondary" style="padding:9px 14px; font-size:0.85rem;">🎛️ Pickup Tone Lab</a>
+        <a href="drop-tuning-calculator.html" class="btn btn-secondary" style="padding:9px 14px; font-size:0.85rem;">🎸 Drop-Tuning String Tension Calculator</a>
+        <a href="index.html" class="btn btn-secondary" style="padding:9px 14px; font-size:0.85rem;">🏠 ActiveFrets Home</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>© <span id="year"></span> ActiveFrets. All rights reserved. • 30-Day Money-Back Guarantee</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const PICKUPS = {
+      active_hb: {
+        name: 'Modern Active Humbucker (EMG 81 / Fishman Style)',
+        subtitle: 'Ceramic Bar / Active Preamp Voicing (+9dB) • Tight Low-End & Low-Z Output',
+        L: 3.8,       // Henries
+        C_self: 85,   // pF
+        R_dc: 10.0,   // kOhm active output impedance
+        gainDb: 9.0,  // Active preamp boost
+        lowShelfDb: -3.0, // Active low-cut voicing for tight palm mutes
+        midBoostDb: 4.0,  // Forward upper-mid attack
+        buffered: true,
+        bassScore: 95,
+        bassNote: 'Active Low-Cut Preamp Voicing',
+        zText: '10 kΩ',
+        zSub: 'Zero Cable Roll-Off',
+        calloutTitle: 'Modern Active Humbucker (EMG 81 / Fishman Style) Acoustic Profile:',
+        calloutBody: 'Modern active humbuckers combine low-inductance coils with an internal 9V active preamp and tailored bass roll-off. This prevents sub-bass mud in drop tunings while driving long 30ft instrument cables and pedalboards with zero high-frequency roll-off.'
+      },
+      triplebucker: {
+        name: '3-Coil Triplebucker (Series-Parallel Heavy)',
+        subtitle: '3 Coils Active • Massive 8.4H Inductance • Thick Doom & Stoner Wall of Sound',
+        L: 8.4,
+        C_self: 165,
+        R_dc: 14.6,
+        gainDb: 5.5,
+        lowShelfDb: 3.2,
+        midBoostDb: 2.0,
+        buffered: false,
+        bassScore: 68,
+        bassNote: 'Massive Sub-Heavy Wall',
+        zText: '14.6 kΩ',
+        zSub: 'High-Z Passive Load',
+        calloutTitle: '3-Coil Triplebucker Acoustic Profile:',
+        calloutBody: 'Packing three coils and 8.4 Henries of inductance, the Triplebucker shifts the resonant peak down into the vocal low-midrange (1.6–2.1 kHz) for a mammoth Doom/Stoner wall of sound. Pair with 500kΩ or 1MΩ pots to preserve top-end definition.'
+      },
+      hb_series: {
+        name: 'Standard Humbucker (Series Wiring)',
+        subtitle: 'Dual Coils in Series • 5.2H Inductance • Classic Rock & Metal Punch',
+        L: 5.2,
+        C_self: 120,
+        R_dc: 9.8,
+        gainDb: 3.0,
+        lowShelfDb: 1.0,
+        midBoostDb: 1.2,
+        buffered: false,
+        bassScore: 78,
+        bassNote: 'Standard 2.5mm Flat Pole',
+        zText: '9.8 kΩ',
+        zSub: 'Passive Series Humbucker',
+        calloutTitle: 'Standard Series Humbucker Acoustic Profile:',
+        calloutBody: 'Series humbucking sums both coils for +3dB output and warm midrange punch around 2.3–2.7 kHz, though long 30ft passive cables can noticeably dull the resonant edge compared to an active buffered pickup.'
+      },
+      hb_parallel: {
+        name: 'Standard Humbucker (Parallel Wiring)',
+        subtitle: 'Dual Coils in Parallel • 1.3H Inductance • Hum-Canceling Single-Coil Snap',
+        L: 1.3,
+        C_self: 120,
+        R_dc: 2.45,
+        gainDb: -1.5,
+        lowShelfDb: -1.5,
+        midBoostDb: -0.5,
+        buffered: false,
+        bassScore: 89,
+        bassNote: 'Crisp Low-Inductance Cut',
+        zText: '2.45 kΩ',
+        zSub: 'Quarter-Inductance Parallel',
+        calloutTitle: 'Parallel Humbucker Acoustic Profile:',
+        calloutBody: 'Wiring both humbucker coils in parallel drops total inductance by 75% (to 1.3H), pushing the resonant peak above 4.2 kHz for glassy, articulate clean passages while retaining 100% hum cancellation.'
+      },
+      p90: {
+        name: 'P-90 Soapbar Single-Coil',
+        subtitle: 'Wide-Bobbin Twin Alnico Bar • 6.5H Inductance • Raw Midrange Bark',
+        L: 6.5,
+        C_self: 135,
+        R_dc: 8.4,
+        gainDb: 2.2,
+        lowShelfDb: 0.8,
+        midBoostDb: 2.4,
+        buffered: false,
+        bassScore: 76,
+        bassNote: 'Twin Bar Magnet Growl',
+        zText: '8.4 kΩ',
+        zSub: 'High-Inductance Single Coil',
+        calloutTitle: 'P-90 Soapbar Acoustic Profile:',
+        calloutBody: 'A wide, shallow coil with twin underneath bar magnets gives the P-90 high inductance (6.5H) with single-coil transient speed—producing an unmistakable gritty mid-bark ideal for garage rock, blues, and stoner riffs.'
+      },
+      strat: {
+        name: 'Single-Coil (Strat Alnico V)',
+        subtitle: 'Alnico V Rod Magnets • 2.4H Inductance • Bell-Like Chime & Percussive Snap',
+        L: 2.4,
+        C_self: 90,
+        R_dc: 6.2,
+        gainDb: -2.0,
+        lowShelfDb: -2.0,
+        midBoostDb: 0.0,
+        buffered: false,
+        bassScore: 91,
+        bassNote: 'Focused Rod Magnet Attack',
+        zText: '6.2 kΩ',
+        zSub: 'Classic Passive Single-Coil',
+        calloutTitle: 'Alnico V Single-Coil Acoustic Profile:',
+        calloutBody: 'Low inductance (2.4H) and low self-capacitance push the resonant peak to 3.5–4.5 kHz, delivering iconic Texas blues snap and bell-like harmonics.'
+      }
+    };
+
+    let state = {
+      pickup: 'active_hb',
+      scale: 25.5,
+      pot: 500,     // kOhm
+      cablePf: 0    // pF (0 = Active Low-Z buffer)
+    };
+
+    function computePickupMetrics(pkKey, scale, potK, cablePf) {
+      const pk = PICKUPS[pkKey];
+      const effectiveCablePf = pk.buffered ? 45 : Math.max(120, cablePf);
+      const C_total_pF = pk.C_self + effectiveCablePf;
+      const C_farads = C_total_pF * 1e-12;
+      // Resonant frequency f0 = 1 / (2 * pi * sqrt(L * C))
+      let f0 = 1 / (2 * Math.PI * Math.sqrt(pk.L * C_farads));
+      // Scale length slight harmonic shift
+      const scaleFactor = scale >= 25.5 ? 1.03 : 0.97;
+      f0 = f0 * scaleFactor;
+      const f0_kHz = f0 / 1000;
+
+      // Q factor affected by pot resistance and buffered state
+      const potFactor = potK === 1000 ? 1.28 : (potK === 500 ? 1.0 : 0.72);
+      const baseQ = pk.buffered ? 3.4 : 2.3;
+      const Q = baseQ * potFactor;
+      const peakDb = pk.gainDb + 20 * Math.log10(Q);
+
+      const bassTightness = Math.min(99, Math.round(pk.bassScore + (scale >= 25.5 ? 2 : -3)));
+
+      return {
+        f0_Hz: f0,
+        f0_kHz,
+        Q,
+        peakDb,
+        bassTightness,
+        effectiveCablePf
+      };
+    }
+
+    function evalFreqResponseDb(freqHz, pk, metrics) {
+      const ratio = freqHz / metrics.f0_Hz;
+      // 2nd-order RLC low-pass transfer function magnitude
+      const denom = Math.sqrt(Math.pow(1 - ratio * ratio, 2) + Math.pow(ratio / metrics.Q, 2));
+      let magDb = 20 * Math.log10(1 / denom);
+
+      // Add pickup base gain + 400Hz shelf behavior
+      magDb += pk.gainDb;
+      if (freqHz < 350) {
+        const lowRatio = (350 - freqHz) / 330;
+        magDb += pk.lowShelfDb * lowRatio;
+      } else if (freqHz >= 400 && freqHz <= 2800) {
+        magDb += pk.midBoostDb * Math.sin(((Math.log10(freqHz) - Math.log10(400)) / (Math.log10(2800) - Math.log10(400))) * Math.PI);
+      }
+      return Math.max(-24, Math.min(24, magDb));
+    }
+
+    function renderGraph() {
+      const pk = PICKUPS[state.pickup];
+      const metrics = computePickupMetrics(state.pickup, state.scale, state.pot, state.cablePf);
+      const refPk = PICKUPS['hb_series'];
+      const refMetrics = computePickupMetrics('hb_series', state.scale, 500, 300);
+
+      document.getElementById('activeCurveTitle').textContent = pk.name;
+      document.getElementById('activeCurveSubtitle').textContent = pk.subtitle;
+      document.getElementById('kpiPeak').textContent = metrics.f0_kHz.toFixed(2) + ' kHz';
+      document.getElementById('kpiQ').textContent = (metrics.peakDb >= 0 ? '+' : '') + metrics.peakDb.toFixed(1) + ' dB Peak';
+      document.getElementById('kpiInductance').textContent = pk.L.toFixed(2) + ' H';
+      document.getElementById('kpiOutput').textContent = pk.buffered ? '+9.0 dB Active Gain' : (pk.gainDb >= 0 ? '+' : '') + pk.gainDb.toFixed(1) + ' dB Output';
+      document.getElementById('kpiBass').textContent = metrics.bassTightness + ' / 100';
+      document.getElementById('kpiBassSub').textContent = pk.bassNote;
+      document.getElementById('kpiZ').textContent = pk.zText;
+      document.getElementById('kpiZSub').textContent = pk.buffered ? 'Zero Cable Roll-Off' : `${metrics.effectiveCablePf}pF Cable Load`;
+      document.getElementById('calloutTitle').textContent = pk.calloutTitle;
+      document.getElementById('calloutBody').textContent = pk.calloutBody;
+
+      const svg = document.getElementById('freqSvg');
+      const W = 700, H = 300;
+      const padL = 48, padR = 24, padT = 24, padB = 38;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+
+      const freqToX = (f) => {
+        const minL = Math.log10(40);
+        const maxL = Math.log10(15000);
+        return padL + ((Math.log10(f) - minL) / (maxL - minL)) * plotW;
+      };
+
+      const dbToY = (db) => {
+        // -18 dB to +24 dB range
+        const minDb = -18, maxDb = 24;
+        return padT + ((maxDb - db) / (maxDb - minDb)) * plotH;
+      };
+
+      let html = `
+        <defs>
+          <linearGradient id="curveGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#6ee7b7" stop-opacity="0.42"/>
+            <stop offset="100%" stop-color="#60a5fa" stop-opacity="0.02"/>
+          </linearGradient>
+        </defs>
+      `;
+
+      // Horizontal dB lines
+      [-12, -6, 0, 6, 12, 18].forEach(db => {
+        const y = dbToY(db);
+        html += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="rgba(255,255,255,${db===0?0.22:0.08})" stroke-dasharray="${db===0?'none':'4 4'}"/>`;
+        html += `<text x="${padL - 8}" y="${y + 4}" fill="#94a3b8" font-size="11" text-anchor="end">${db > 0 ? '+'+db : db}dB</text>`;
+      });
+
+      // Vertical Frequency lines
+      [60, 120, 250, 400, 1000, 2500, 4000, 8000].forEach(f => {
+        const x = freqToX(f);
+        const label = f >= 1000 ? (f/1000)+'kHz' : f+'Hz';
+        html += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${H - padB}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3 4"/>`;
+        html += `<text x="${x}" y="${H - 12}" fill="#94a3b8" font-size="11" text-anchor="middle">${label}</text>`;
+      });
+
+      // Highlight 400Hz Mid-Cut / Shelf Zone marker
+      const x400 = freqToX(400);
+      html += `<line x1="${x400}" y1="${padT}" x2="${x400}" y2="${H - padB}" stroke="rgba(96,165,250,0.35)" stroke-width="1.5"/>`;
+      html += `<text x="${x400 + 6}" y="${padT + 14}" fill="#60a5fa" font-size="10" font-weight="700">400Hz Tightness Zone</text>`;
+
+      // Reference Curve (Standard Humbucker dashed)
+      let refPts = [];
+      let mainPts = [];
+      const steps = 110;
+      for (let i = 0; i <= steps; i++) {
+        const f = 40 * Math.pow(15000 / 40, i / steps);
+        const x = freqToX(f);
+        const yRef = dbToY(evalFreqResponseDb(f, refPk, refMetrics));
+        const yMain = dbToY(evalFreqResponseDb(f, pk, metrics));
+        refPts.push(`${x.toFixed(1)},${yRef.toFixed(1)}`);
+        mainPts.push(`${x.toFixed(1)},${yMain.toFixed(1)}`);
+      }
+
+      html += `<polyline fill="none" stroke="rgba(184,192,217,0.38)" stroke-width="2" stroke-dasharray="5 5" points="${refPts.join(' ')}"/>`;
+
+      const areaPts = `${freqToX(40).toFixed(1)},${(H - padB).toFixed(1)} ` + mainPts.join(' ') + ` ${freqToX(15000).toFixed(1)},${(H - padB).toFixed(1)}`;
+      html += `<polygon fill="url(#curveGrad)" points="${areaPts}"/>`;
+      html += `<polyline fill="none" stroke="#6ee7b7" stroke-width="3.2" points="${mainPts.join(' ')}"/>`;
+
+      // Resonant Peak Dot
+      const peakX = freqToX(metrics.f0_Hz);
+      const peakY = dbToY(evalFreqResponseDb(metrics.f0_Hz, pk, metrics));
+      html += `<circle cx="${peakX}" cy="${peakY}" r="6" fill="#6ee7b7" stroke="#08111f" stroke-width="2"/>`;
+      html += `<rect x="${Math.min(W - 155, Math.max(padL, peakX - 65))}" y="${Math.max(6, peakY - 34)}" width="134" height="22" rx="6" fill="#0b1020" stroke="#6ee7b7" stroke-width="1"/>`;
+      html += `<text x="${Math.min(W - 88, Math.max(padL + 67, peakX + 2))}" y="${Math.max(21, peakY - 19)}" fill="#6ee7b7" font-size="11" font-weight="800" text-anchor="middle">Peak: ${metrics.f0_kHz.toFixed(2)} kHz</text>`;
+
+      svg.innerHTML = html;
+      updateAudioFiltersIfPlaying();
+    }
+
+    function selectPickup(pkKey) {
+      state.pickup = pkKey;
+      document.querySelectorAll('.pickup-opt').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.pickup === pkKey);
+      });
+      if (PICKUPS[pkKey].buffered) {
+        setCable(0, true);
+      } else if (state.cablePf === 0) {
+        setCable(300, true);
+      }
+      renderGraph();
+    }
+
+    function setScale(val) {
+      state.scale = val;
+      document.getElementById('scale255').classList.toggle('active', val === 25.5);
+      document.getElementById('scale2475').classList.toggle('active', val === 24.75);
+      document.getElementById('scaleLabel').textContent = val === 25.5 ? '25.5" (Fender / Snap)' : '24.75" (Gibson / Warm)';
+      renderGraph();
+    }
+
+    function setPot(val) {
+      state.pot = val;
+      document.getElementById('pot250').classList.toggle('active', val === 250);
+      document.getElementById('pot500').classList.toggle('active', val === 500);
+      document.getElementById('pot1000').classList.toggle('active', val === 1000);
+      document.getElementById('potLabel').textContent = val === 1000 ? '1 MΩ (Max Bite)' : val + ' kΩ';
+      renderGraph();
+    }
+
+    function setCable(pf, skipRender) {
+      state.cablePf = pf;
+      document.getElementById('cab10').classList.toggle('active', pf === 300);
+      document.getElementById('cab30').classList.toggle('active', pf === 900);
+      document.getElementById('cabBuffer').classList.toggle('active', pf === 0);
+      document.getElementById('cableLabel').textContent = pf === 0 ? 'Active Low-Z Buffer' : (pf === 300 ? '10ft Cable (300pF)' : '30ft Coiled (900pF)');
+      if (!skipRender) renderGraph();
+    }
+
+    function applyPreset(preset, btnEl) {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+
+      if (preset === 'sludge') {
+        selectPickup('active_hb');
+        setScale(25.5);
+        setPot(500);
+        setCable(0);
+      } else if (preset === 'doom') {
+        selectPickup('triplebucker');
+        setScale(24.75);
+        setPot(500);
+        setCable(300);
+      } else if (preset === 'texas') {
+        selectPickup('strat');
+        setScale(25.5);
+        setPot(250);
+        setCable(300);
+      } else if (preset === 'classic') {
+        selectPickup('hb_series');
+        setScale(24.75);
+        setPot(500);
+        setCable(300);
+      } else if (preset === 'thrash') {
+        selectPickup('active_hb');
+        setScale(25.5);
+        setPot(1000);
+        setCable(0);
+      }
+    }
+
+    // WebAudio Real-Time Riff Synthesizer & Pickup Filter Simulation
+    let audioCtx = null;
+    let isPlaying = false;
+    let riffTimer = null;
+    let activeResFilter = null;
+    let activeShelfFilter = null;
+    let activeDriveNode = null;
+
+    function makeDistortionCurve(amount) {
+      const n_samples = 44100;
+      const curve = new Float32Array(n_samples);
+      for (let i = 0; i < n_samples; ++i) {
+        const x = (i * 2) / n_samples - 1;
+        // Overdrive waveshaping
+        curve[i] = Math.tanh(amount * x + 0.15 * x * x);
+      }
+      return curve;
+    }
+
+    function updateAudioFiltersIfPlaying() {
+      if (!audioCtx || !activeResFilter || !activeShelfFilter || !activeDriveNode) return;
+      const pk = PICKUPS[state.pickup];
+      const metrics = computePickupMetrics(state.pickup, state.scale, state.pot, state.cablePf);
+      activeResFilter.frequency.setTargetAtTime(metrics.f0_Hz, audioCtx.currentTime, 0.03);
+      activeResFilter.Q.setTargetAtTime(metrics.Q, audioCtx.currentTime, 0.03);
+      activeShelfFilter.gain.setTargetAtTime(pk.lowShelfDb * 1.6, audioCtx.currentTime, 0.03);
+      const driveAmt = pk.buffered ? 4.8 : (pk.gainDb > 3 ? 3.4 : 2.1);
+      activeDriveNode.curve = makeDistortionCurve(driveAmt);
+    }
+
+    function triggerChugNote(freq) {
+      if (!audioCtx || !isPlaying) return;
+      const now = audioCtx.currentTime;
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const noteGain = audioCtx.createGain();
+
+      osc1.type = 'sawtooth';
+      osc2.type = 'triangle';
+      osc1.frequency.setValueAtTime(freq, now);
+      osc2.frequency.setValueAtTime(freq * 1.5, now); // Power chord fifth
+
+      noteGain.gain.setValueAtTime(0.001, now);
+      noteGain.gain.exponentialRampToValueAtTime(0.32, now + 0.015);
+      noteGain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+      osc1.connect(noteGain);
+      osc2.connect(noteGain);
+      noteGain.connect(activeShelfFilter);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.3);
+      osc2.stop(now + 0.3);
+    }
+
+    function toggleAudition() {
+      const btn = document.getElementById('auditionBtn');
+      if (isPlaying) {
+        isPlaying = false;
+        clearInterval(riffTimer);
+        btn.textContent = '▶ Audition Drop-C Riff';
+        return;
+      }
+
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      activeShelfFilter = audioCtx.createBiquadFilter();
+      activeShelfFilter.type = 'lowshelf';
+      activeShelfFilter.frequency.value = 350;
+
+      activeResFilter = audioCtx.createBiquadFilter();
+      activeResFilter.type = 'lowpass';
+
+      activeDriveNode = audioCtx.createWaveShaper();
+      activeDriveNode.oversample = '4x';
+
+      const masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.28;
+
+      activeShelfFilter.connect(activeResFilter);
+      activeResFilter.connect(activeDriveNode);
+      activeDriveNode.connect(masterGain);
+      masterGain.connect(audioCtx.destination);
+
+      updateAudioFiltersIfPlaying();
+
+      isPlaying = true;
+      btn.textContent = '⏹ Stop Riff Audition';
+
+      // Drop-C Southern Sludge Riff sequence (C2 = 65.41Hz, Eb2 = 77.78Hz, F2 = 87.31Hz, F#2 = 92.50Hz)
+      const riffNotes = [65.41, 65.41, 77.78, 65.41, 87.31, 92.50, 87.31, 77.78];
+      let step = 0;
+      triggerChugNote(riffNotes[0]);
+      riffTimer = setInterval(() => {
+        if (!isPlaying) return;
+        step = (step + 1) % riffNotes.length;
+        triggerChugNote(riffNotes[step]);
+      }, 310);
+    }
+
+    // Initialize on load
+    renderGraph();
+  </script>
+</body>
+</html>

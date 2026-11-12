@@ -1,0 +1,10 @@
+# ActiveFrets — Interactive Guitar Fretboard System & Free Pro Engineering Tools
+
+> ActiveFrets helps guitarists master the guitar fretboard across 9 common standard, drop, and alternate tunings with instant visualization of chords, scales, intervals, and CAGED shapes, plus a built-in tuner and diagram exporter.
+
+## Core Product
+- [ActiveFrets Interactive Guitar System](https://activefrets.com/index.html): Browser-based interactive fretboard visualizer supporting 9 tunings, CAGED system mapping, layered intervals/notes, built-in chromatic tuner, and printable diagram exports. One-time lifetime access ($39.99 via Digistore24 product #672922).
+
+## Free Interactive Guitarist Pro Tools
+- [Interactive Guitar Pickup & Tone Voicing Lab](https://activefrets.com/pickup-tone-lab.html): Real-time RLC frequency response simulator comparing Single-Coil (Strat), P-90, Standard Humbucker (Series & Parallel), 3-Coil Triplebucker, and Modern Active Humbucker (EMG 81 / Fishman Style). Includes live SVG frequency response graphing and WebAudio API riff audition.
+- [Interactive Drop-Tuning & String Gauge Tension Calculator](https://activefrets.com/drop-tuning-calculator.html): Exact D'Addario unit-weight string physics calculator ($T = \text{UW} \times (2 \times L \times f)^2 / 386.4$) across 24.75" to 27.0" Baritone scale lengths and 9 tunings (E Standard, Eb, Drop D, D Standard, C# Standard, C Standard, Drop C, B Standard, Drop A).
