@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /tool.html
+Disallow: /ActiveFrets_App.html
+Disallow: /ActiveFrets_Access_Guide.html
+Disallow: /thank-you.html
+Disallow: /index.html.bak
+
+Sitemap: https://activefrets.com/sitemap.xml

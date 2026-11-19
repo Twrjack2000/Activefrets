@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <title>ActiveFrets - Guitar Fretboard Tool</title>
+    <link rel="canonical" href="https://activefrets.com/" />
+    <meta name="robots" content="noindex, follow" />
     <script>
         // Session Check
         if (!sessionStorage.getItem('isLoggedIn')) {
-            window.location.href = 'index.html';
+            window.location.href = '/';
         }
     </script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script> -->
@@ -1545,7 +1547,7 @@
 
         function signOut() {
             sessionStorage.removeItem('isLoggedIn');
-            window.location.href = 'index.html';
+            window.location.href = '/';
         }
     </script>
 </body>
